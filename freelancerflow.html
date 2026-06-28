@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FreelanceFlow — The only income dashboard built for Pakistani freelancers on Fiverr, Upwork & Freelancer.com. Live PKR rates, FBR tax calculator, real earnings breakdown." />
+  <meta name="theme-color" content="#00C853" />
+  <title>FreelanceFlow — Income Dashboard for Pakistani Freelancers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ═══════════════════════════════════════════════
+   FreelanceFlow — Inline CSS (10/10)
+   ═══════════════════════════════════════════════ */
+
+/* LIGHT TOKENS */
+:root {
+  --bg:#F8FAFC; --surface:#FFFFFF; --surface-2:#F1F5F9;
+  --border:#E7EDF5; --divider:#E5E7EB; --hover:#F3F4F6;
+  --green:#00C853; --green-dim:rgba(0,200,83,0.10); --green-glow:rgba(0,200,83,0.25);
+  --gold:#FFB800; --gold-dim:rgba(255,184,0,0.10);
+  --red:#EF4444; --red-dim:rgba(239,68,68,0.10);
+  --blue:#3B82F6; --blue-dim:rgba(59,130,246,0.10);
+  --text:#111827; --text-2:#6B7280; --text-3:#9CA3AF;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 16px 40px rgba(0,0,0,0.10),0 4px 12px rgba(0,0,0,0.06);
+  --radius:6px; --radius-lg:12px; --ticker-h:36px; --nav-h:64px;
+}
+/* DARK TOKENS */
+[data-theme="dark"] {
+  --bg:#0D1117; --surface:#161B22; --surface-2:#1C2128;
+  --border:#30363D; --divider:#21262D; --hover:#1C2128;
+  --text:#E6EDF3; --text-2:#8B949E; --text-3:#6E7681;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg:0 16px 40px rgba(0,0,0,0.5);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;transition:background .3s,color .3s}
+body.page-loading{overflow:hidden}
+h1,h2,h3{font-family:'Sora',sans-serif;letter-spacing:-.02em;line-height:1.15}
+.mono,.stat-value,.logo-text,.calc-step-val,.donut-center-label,.hero-stat-num{font-family:'DM Mono',monospace}
+
+/* PAGE LOADER */
+.page-loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:10000;transition:opacity .5s,transform .5s}
+.page-loader.done{opacity:0;pointer-events:none;transform:scale(1.02)}
+.loader-logo{display:flex;align-items:center;gap:12px;font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--text)}
+.loader-bar{width:200px;height:3px;background:var(--divider);border-radius:2px;overflow:hidden}
+.loader-fill{height:100%;background:var(--green);border-radius:2px;width:0;transition:width .4s ease}
+.loader-status{font-size:12px;color:var(--text-3);font-family:'DM Mono',monospace}
+
+/* SHIMMER */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.ticker-skeleton{display:inline-block;height:12px;border-radius:4px;width:60px;background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.05) 75%);background-size:800px 100%;animation:shimmer 1.5s infinite}
+.ticker-skeleton.sm{width:40px;margin-left:6px}
+
+/* TICKER */
+.ticker-bar{background:var(--text);overflow:hidden;height:var(--ticker-h);display:flex;align-items:center;position:relative;z-index:200}
+.ticker-track{display:flex;align-items:center;white-space:nowrap;animation:ticker-scroll 50s linear infinite;will-change:transform}
+.ticker-track:hover{animation-play-state:paused}
+.ticker-item{display:inline-flex;align-items:center;gap:8px;padding:0 28px;font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.7);border-right:1px solid rgba(255,255,255,.08)}
+.ticker-item .rate{color:var(--green);font-weight:500}
+.ticker-item .pair{color:rgba(255,255,255,.4);font-size:11px}
+.ticker-item .chg-up{color:#22C55E;font-size:10px}
+.ticker-item .chg-dn{color:#EF4444;font-size:10px}
+@keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(248,250,252,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:var(--nav-h);gap:24px;transition:background .3s,border-color .3s}
+[data-theme="dark"] .nav{background:rgba(13,17,23,.92)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo-mark{width:34px;height:34px;animation:logo-pulse 3s ease-in-out infinite}
+@keyframes logo-pulse{0%,100%{filter:drop-shadow(0 0 0 rgba(0,200,83,0))}50%{filter:drop-shadow(0 0 8px rgba(0,200,83,.5))}}
+.logo-text{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--text)}
+.nav-links{display:flex;align-items:center;gap:2px;flex:1;justify-content:center}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);text-decoration:none;padding:6px 14px;border-radius:var(--radius);transition:color .15s,background .15s;position:relative}
+.nav-link:hover{color:var(--text);background:var(--hover)}
+.nav-link.active{color:var(--green)}
+.nav-link.active::after{content:'';position:absolute;bottom:-1px;left:14px;right:14px;height:2px;background:var(--green);border-radius:1px}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.theme-toggle{width:36px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s;position:relative;overflow:hidden;color:var(--text-2)}
+.theme-toggle:hover{background:var(--hover);color:var(--text)}
+.theme-icon{position:absolute;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.theme-icon.sun{transform:translateY(0)}
+.theme-icon.moon{transform:translateY(30px);opacity:0}
+[data-theme="dark"] .theme-icon.sun{transform:translateY(-30px);opacity:0}
+[data-theme="dark"] .theme-icon.moon{transform:translateY(0);opacity:1}
+.nav-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--radius)}
+.nav-hamburger span{width:22px;height:2px;background:var(--text);border-radius:1px;transition:all .3s;display:block}
+.nav-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-hamburger.open span:nth-child(2){opacity:0}
+.nav-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-nav{position:fixed;top:calc(var(--ticker-h) + var(--nav-h));left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px;z-index:99;display:flex;flex-direction:column;gap:4px;transform:translateY(-110%);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.mobile-nav.open{transform:translateY(0)}
+.mobile-nav-link{font-size:16px;font-weight:500;color:var(--text-2);text-decoration:none;padding:12px 0;border-bottom:1px solid var(--divider)}
+.mobile-nav-link:last-of-type{border-bottom:none}
+.mobile-nav-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:98;opacity:0;pointer-events:none;transition:opacity .3s}
+.mobile-nav-overlay.open{opacity:1;pointer-events:all}
+
+/* BUTTONS */
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);padding:10px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,box-shadow .15s,transform .1s;white-space:nowrap;position:relative;overflow:hidden}
+.btn-primary:hover{background:#00B84A;box-shadow:0 0 0 3px var(--green-glow)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary.full-width{width:100%;margin-top:12px}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:transparent;color:var(--text-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-ghost:hover{background:var(--hover);color:var(--text);border-color:var(--text-3)}
+.ripple-wave{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:ripple-anim .5s linear;pointer-events:none}
+@keyframes ripple-anim{to{transform:scale(4);opacity:0}}
+.pulse-btn::before{content:'';position:absolute;inset:0;border-radius:inherit;background:rgba(255,255,255,.25);animation:btn-pulse 2.5s ease-out infinite;pointer-events:none}
+@keyframes btn-pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(1.6);opacity:0}}
+
+/* LAYOUT */
+.container{max-width:1160px;margin:0 auto;padding:0 40px}
+.section{padding:88px 0}
+.section-alt{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.section-header{text-align:center;max-width:640px;margin:0 auto 60px}
+.section-eyebrow{display:inline-block;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.12em;color:var(--green);margin-bottom:12px}
+.section-title{font-size:clamp(26px,3vw,38px);font-weight:700;color:var(--text);margin-bottom:14px}
+.section-sub{font-size:16px;color:var(--text-2);line-height:1.75}
+.two-col-layout{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+
+/* HERO */
+.hero{position:relative;min-height:90vh;display:flex;flex-direction:column;align-items:center;padding:72px 40px 48px;overflow:hidden;background:var(--bg);border-bottom:1px solid var(--border)}
+.particle-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.hero-content{position:relative;z-index:1;max-width:1160px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;flex:1}
+.hero-eyebrow{display:flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text-2);margin-bottom:20px}
+.dot-pulse{width:8px;height:8px;background:var(--green);border-radius:50%;flex-shrink:0;animation:dot-pulse 1.8s ease-in-out infinite}
+@keyframes dot-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(0,200,83,.5)}50%{transform:scale(1.2);box-shadow:0 0 0 6px rgba(0,200,83,0)}}
+.hero-headline{font-size:clamp(32px,4.5vw,58px);font-weight:800;color:var(--text);margin-bottom:22px}
+.accent-text{color:var(--green)}
+.hero-sub{font-size:17px;color:var(--text-2);line-height:1.8;max-width:480px;margin-bottom:32px}
+.hero-ctas{display:flex;gap:12px;margin-bottom:44px;flex-wrap:wrap}
+.hero-stats{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.hero-stat{display:flex;align-items:baseline;gap:3px;flex-direction:column}
+.hero-stat-num{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;color:var(--text)}
+.hero-stat-prefix,.hero-stat-suffix{font-family:'DM Mono',monospace;font-size:14px;color:var(--green)}
+.hero-stat-label{font-size:11px;color:var(--text-3);white-space:nowrap}
+.hero-stat-divider{width:1px;height:40px;background:var(--divider);flex-shrink:0}
+.hero-right{display:flex;justify-content:center;align-items:center}
+.hero-3d-wrap{width:100%;max-width:480px;aspect-ratio:4/3;position:relative}
+.hero-canvas{width:100%;height:100%;border-radius:var(--radius-lg);display:block}
+.hero-scroll-hint{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:32px;font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace;letter-spacing:.08em;animation:fade-bob 2s ease-in-out infinite}
+.scroll-arrow{width:16px;height:16px;border-right:2px solid var(--text-3);border-bottom:2px solid var(--text-3);transform:rotate(45deg) translateY(-4px)}
+@keyframes fade-bob{0%,100%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(6px)}}
+.enter-seq{opacity:0;transform:translateY(20px);animation:enter-in .7s cubic-bezier(.34,1.56,.64,1) forwards;animation-delay:calc(var(--seq,1) * .12s)}
+@keyframes enter-in{to{opacity:1;transform:translateY(0)}}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;display:flex;gap:16px;align-items:flex-start;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;transition:box-shadow .2s,border-color .2s;cursor:default;transform-style:preserve-3d;will-change:transform}
+.stat-card:hover{box-shadow:var(--shadow-md);border-color:var(--text-3)}
+.stat-icon{font-family:'DM Mono',monospace;font-size:18px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);flex-shrink:0;font-weight:600}
+.stat-icon.green{background:var(--green-dim);color:var(--green)}
+.stat-icon.gold{background:var(--gold-dim);color:var(--gold)}
+.stat-icon.red{background:var(--red-dim);color:var(--red)}
+.stat-icon.blue{background:var(--blue-dim);color:var(--blue)}
+.stat-body{flex:1;min-width:0}
+.stat-label{font-size:12px;color:var(--text-3);margin-bottom:6px;font-weight:500}
+.stat-value{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-delta{font-size:11px;color:var(--text-3);margin-top:4px}
+.card-glare{position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .3s;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.22) 0%,transparent 60%)}
+.stat-card:hover .card-glare{opacity:1}
+
+/* CHART */
+.chart-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+.chart-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:16px}
+.chart-title{font-size:18px;font-weight:600;color:var(--text);margin-top:4px}
+.chart-toggle{display:flex;gap:4px}
+.toggle-btn{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--radius);border:1px solid var(--border);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s}
+.toggle-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.toggle-btn:hover:not(.active){background:var(--hover)}
+.chart-wrap{width:100%;overflow:hidden}
+.income-svg{width:100%;display:block}
+
+/* DONUT */
+.donut-wrap{display:flex;justify-content:center;align-items:center}
+.donut-svg{width:220px;height:220px;overflow:visible}
+.platform-legend{margin-top:24px}
+.legend-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--divider);transition:background .15s,padding .15s;border-radius:var(--radius);cursor:default}
+.legend-item:last-child{border-bottom:none}
+.legend-item:hover{background:var(--hover);padding-left:8px;padding-right:8px;margin:0 -8px}
+.legend-left{display:flex;align-items:center;gap:10px}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.legend-name{font-size:14px;color:var(--text);font-weight:500}
+.legend-sub{font-size:11px;color:var(--text-3)}
+.legend-right{text-align:right}
+.legend-amount{font-family:'DM Mono',monospace;font-size:14px;color:var(--text);font-weight:500}
+.best-badge{font-family:'DM Mono',monospace;font-size:10px;background:var(--gold-dim);color:var(--gold);padding:2px 7px;border-radius:3px;letter-spacing:.08em;margin-left:6px}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px;text-align:center}
+.empty-icon{width:64px;height:48px;color:var(--text-3)}
+.empty-state p{font-size:14px;color:var(--text-3);max-width:280px;line-height:1.6}
+
+/* CALCULATOR */
+.calc-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.calc-inputs,.calc-result{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+.calc-hint{font-size:12px;color:var(--text-3);margin-top:8px;font-family:'DM Mono',monospace}
+.calc-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:220px;gap:12px}
+.calc-placeholder-icon{font-family:'DM Mono',monospace;font-size:40px;color:var(--text-3)}
+.calc-placeholder-text{font-size:14px;color:var(--text-3);text-align:center;max-width:200px;line-height:1.6}
+.calc-steps{list-style:none}
+.calc-step{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--divider);opacity:0;transform:translateY(8px);animation:step-reveal .4s cubic-bezier(.34,1.56,.64,1) forwards}
+.calc-step:last-child{border-bottom:none}
+@keyframes step-reveal{to{opacity:1;transform:translateY(0)}}
+.calc-step-label{font-size:13px;color:var(--text-2)}
+.calc-step-val{font-family:'DM Mono',monospace;font-size:14px;color:var(--text);font-weight:500}
+.calc-step.deduct .calc-step-val{color:var(--red)}
+.calc-step.final{border-top:2px solid var(--green);margin-top:4px;padding-top:16px}
+.calc-step.final .calc-step-label{font-weight:700;color:var(--text);font-size:14px}
+.calc-step.final .calc-step-val{font-size:20px;color:var(--green)}
+
+/* INPUTS */
+.input-group{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.input-label{font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em}
+.input-row{display:flex;gap:8px}
+.input-field{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);transition:border-color .15s,box-shadow .15s;outline:none}
+.input-field:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim)}
+.input-field.full{width:100%}
+.input-select{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-family:'DM Mono',monospace;font-size:13px;color:var(--text);cursor:pointer;outline:none;transition:border-color .15s;white-space:nowrap}
+.input-select:focus{border-color:var(--green)}
+.input-select.full{width:100%}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.income-preview{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:16px 0;min-height:80px}
+.preview-placeholder{color:var(--text-3);font-size:13px;font-style:italic}
+.preview-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
+.preview-row.final{color:var(--green);font-weight:700;font-family:'DM Mono',monospace;border-top:1px solid var(--divider);margin-top:8px;padding-top:12px;font-size:15px}
+.preview-row .deduct-val{color:var(--red);font-family:'DM Mono',monospace}
+.preview-row .val{font-family:'DM Mono',monospace;color:var(--text)}
+
+/* COMPARISON */
+.comparison-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.comparison-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);position:relative;transition:box-shadow .2s,transform .2s}
+.comparison-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.comparison-card.winner{border-color:var(--green);box-shadow:0 0 0 1px var(--green),var(--shadow-md)}
+.winner-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;background:var(--green);color:#fff;padding:3px 10px;border-radius:3px;letter-spacing:.08em;white-space:nowrap}
+.comp-platform{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+.comp-sub{font-size:12px;color:var(--text-3);margin-bottom:16px}
+.comp-bar-wrap{height:6px;background:var(--divider);border-radius:3px;margin:12px 0;overflow:hidden}
+.comp-bar{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1);width:0}
+.comp-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.comp-row .label{color:var(--text-3)}
+.comp-row .val{font-family:'DM Mono',monospace;color:var(--text);font-weight:500}
+.comp-real{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--green);margin:12px 0 4px}
+.comp-label{font-size:11px;color:var(--text-3);margin-bottom:8px}
+
+/* FBR TAX */
+.tax-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.tax-input-card,.tax-result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+.tax-slabs{margin-top:24px;border-top:1px solid var(--divider);padding-top:20px}
+.slab-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:12px}
+.slab-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:var(--radius);margin-bottom:2px;font-size:13px;color:var(--text-2);transition:background .15s}
+.slab-row.active-slab{background:var(--green-dim);color:var(--text);font-weight:600}
+.slab-rate{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;padding:2px 8px;border-radius:3px}
+.slab-rate.zero{background:var(--green-dim);color:var(--green)}
+.slab-rate.low,.slab-rate.mid{background:#fef3c7;color:#92400e}
+.slab-rate.high{background:#fee2e2;color:var(--red)}
+.slab-rate.top{background:var(--red-dim);color:var(--red)}
+[data-theme="dark"] .slab-rate.low,[data-theme="dark"] .slab-rate.mid{background:rgba(251,191,36,.15);color:#fbbf24}
+.tax-result-item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--divider);font-size:14px}
+.tax-result-item:last-child{border-bottom:none}
+.tax-result-item .label{color:var(--text-2)}
+.tax-result-item .val{font-family:'DM Mono',monospace;color:var(--text);font-weight:500}
+.tax-result-item.highlight .val{color:var(--red);font-size:20px}
+.tax-progress-wrap{margin:20px 0}
+.tax-progress-label{font-size:12px;color:var(--text-3);margin-bottom:8px}
+.tax-progress-bg{height:8px;background:var(--divider);border-radius:4px;overflow:hidden}
+.tax-progress-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.34,1.56,.64,1);width:0}
+
+/* GOAL */
+.goal-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.goal-input-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm)}
+.goal-presets{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.goal-preset-label{font-size:12px;color:var(--text-3)}
+.preset-btn{font-family:'DM Mono',monospace;font-size:12px;padding:5px 12px;border:1px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--text-2);cursor:pointer;transition:all .15s}
+.preset-btn:hover{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.goal-display{display:flex;flex-direction:column;align-items:center;gap:20px}
+.goal-ring-wrap{position:relative;width:180px;height:180px}
+.goal-ring{width:180px;height:180px;transform:rotate(-90deg)}
+.goal-ring-bg{fill:none;stroke:var(--divider);stroke-width:14}
+.goal-ring-fill{fill:none;stroke:var(--green);stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1.5s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 0 6px rgba(0,200,83,.4))}
+.goal-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.goal-pct{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--text)}
+.goal-pct-label{font-size:11px;color:var(--text-3)}
+.goal-message{font-size:15px;color:var(--text-2);text-align:center;max-width:280px;line-height:1.7}
+.goal-stats{width:100%;max-width:300px}
+.goal-stat-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--divider)}
+.goal-stat-row .label{color:var(--text-3)}
+.goal-stat-row .val{font-family:'DM Mono',monospace;color:var(--text);font-weight:500}
+
+/* ADD INCOME */
+.add-income-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;box-shadow:var(--shadow-sm);max-width:720px;margin:0 auto}
+
+/* TABLE */
+.table-controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.search-input{flex:1;min-width:200px;max-width:360px}
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border)}
+.income-table{width:100%;border-collapse:collapse;background:var(--surface)}
+.income-table th{padding:12px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);text-align:left;background:var(--surface-2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+.income-table th:hover{color:var(--text)}
+.sort-indicator{color:var(--text-3);font-size:10px}
+.income-table td{padding:13px 16px;font-size:13px;color:var(--text);border-bottom:1px solid var(--divider);vertical-align:middle}
+.income-table tr:last-child td{border-bottom:none}
+.income-table tr:hover td{background:var(--hover)}
+.table-empty{padding:0!important}
+.platform-tag{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:3px;font-weight:500;letter-spacing:.06em}
+.platform-tag.fiverr{background:var(--green-dim);color:var(--green)}
+.platform-tag.upwork{background:var(--gold-dim);color:#92400e}
+.platform-tag.freelancer{background:var(--blue-dim);color:var(--blue)}
+.platform-tag.direct{background:#f3e8ff;color:#7c3aed}
+.platform-tag.other{background:var(--hover);color:var(--text-3)}
+[data-theme="dark"] .platform-tag.upwork{color:var(--gold)}
+[data-theme="dark"] .platform-tag.direct{background:rgba(139,92,246,.15);color:#a78bfa}
+.delete-btn{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px;padding:4px 8px;border-radius:var(--radius);transition:all .15s}
+.delete-btn:hover{color:var(--red);background:var(--red-dim)}
+.mono-val{font-family:'DM Mono',monospace;font-weight:500}
+.green-val{color:var(--green)}
+
+/* TESTIMONIALS */
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.flip-card{height:280px;perspective:1000px;cursor:pointer}
+.flip-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.23,1,.32,1)}
+.flip-card:hover .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
+.flip-back{transform:rotateY(180deg);background:var(--text);border-color:var(--text)}
+.testi-quote{font-size:14px;line-height:1.8;color:var(--text-2);flex:1;font-style:italic}
+.testi-author{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:16px}
+.testi-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;flex-shrink:0}
+.testi-name{font-weight:600;font-size:14px;color:var(--text)}
+.testi-meta{font-size:11px;color:var(--text-3);margin-top:2px}
+.flip-hint{font-size:11px;color:var(--text-3);font-family:'DM Mono',monospace;margin-top:8px}
+.flip-stat-title{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+.flip-stat{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;color:rgba(255,255,255,.65)}
+.flip-stat:last-child{border-bottom:none}
+.flip-stat span:last-child{font-family:'DM Mono',monospace;color:#fff;font-weight:500}
+.flip-stat.highlight span:last-child{color:var(--green)}
+
+/* FOOTER */
+.footer{background:var(--text);border-top:1px solid rgba(255,255,255,.06)}
+.footer-inner{display:grid;grid-template-columns:1fr auto 1fr;gap:48px;padding:56px 40px;align-items:start}
+.footer .logo-text{color:#fff}
+.footer-tagline{font-size:13px;color:rgba(255,255,255,.4);margin-top:12px;line-height:1.7}
+.footer-links{display:flex;gap:48px}
+.footer-link-group{display:flex;flex-direction:column;gap:10px}
+.footer-link-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:4px}
+.footer-link{font-size:14px;color:rgba(255,255,255,.6);text-decoration:none;transition:color .15s}
+.footer-link:hover{color:#fff}
+.footer-right{text-align:right}
+.footer-built{font-size:14px;color:rgba(255,255,255,.8);font-weight:500;margin-bottom:4px}
+.footer-built strong{color:var(--green)}
+.footer-tech{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.3);margin-bottom:16px}
+.footer-social{display:flex;gap:12px;justify-content:flex-end}
+.social-link{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border-radius:var(--radius);color:rgba(255,255,255,.5);transition:all .15s;text-decoration:none}
+.social-link:hover{background:rgba(255,255,255,.12);color:#fff}
+.social-link svg{width:16px;height:16px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding:16px 40px}
+.footer-bottom .container{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.3);padding:0}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;padding:20px}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:scale(.94) translateY(12px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.modal-overlay.open .modal{transform:scale(1) translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:600;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--text-3);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:var(--radius);transition:all .15s}
+.modal-close:hover{color:var(--text);background:var(--hover)}
+.modal-body{padding:24px}
+.modal-footer{display:flex;justify-content:flex-end;gap:12px;padding:16px 24px;border-top:1px solid var(--border)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;font-size:13px;padding:12px 20px;border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:2000;opacity:0;transform:translateY(12px) scale(.97);transition:all .25s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0) scale(1)}
+.toast.success::before{content:'✓  '}
+.toast.error::before{content:'✕  ';color:var(--red)}
+
+/* SCROLL REVEAL */
+.reveal-item{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s cubic-bezier(.34,1.56,.64,1)}
+.reveal-item.visible{opacity:1;transform:translateY(0)}
+.reveal-stagger .stat-card,.reveal-stagger .comparison-card,.reveal-stagger .testimonial-card{opacity:0;transform:translateY(24px);transition:opacity .5s ease,transform .5s cubic-bezier(.34,1.56,.64,1)}
+.reveal-stagger.visible .stat-card,.reveal-stagger.visible .comparison-card,.reveal-stagger.visible .testimonial-card{opacity:1;transform:translateY(0)}
+.reveal-stagger.visible .stat-card:nth-child(1),.reveal-stagger.visible .comparison-card:nth-child(1),.reveal-stagger.visible .testimonial-card:nth-child(1){transition-delay:0s}
+.reveal-stagger.visible .stat-card:nth-child(2),.reveal-stagger.visible .comparison-card:nth-child(2),.reveal-stagger.visible .testimonial-card:nth-child(2){transition-delay:.08s}
+.reveal-stagger.visible .stat-card:nth-child(3),.reveal-stagger.visible .comparison-card:nth-child(3),.reveal-stagger.visible .testimonial-card:nth-child(3){transition-delay:.16s}
+.reveal-stagger.visible .stat-card:nth-child(4){transition-delay:.24s}
+.reveal-stagger.visible .stat-card:nth-child(5){transition-delay:.32s}
+.reveal-stagger.visible .stat-card:nth-child(6){transition-delay:.40s}
+
+/* RESPONSIVE */
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.comparison-grid{grid-template-columns:repeat(2,1fr)}.footer-inner{grid-template-columns:1fr 1fr}.footer-right{text-align:left;grid-column:1/-1}.footer-social{justify-content:flex-start}}
+@media(max-width:768px){.nav{padding:0 20px}.nav-links{display:none}.nav-hamburger{display:flex}.hero{padding:40px 20px 32px;min-height:auto}.hero-content{grid-template-columns:1fr;gap:0}.hero-right{display:none}.container{padding:0 20px}.section{padding:60px 0}.stats-grid{grid-template-columns:1fr}.two-col-layout{grid-template-columns:1fr}.calc-layout,.tax-layout,.goal-layout{grid-template-columns:1fr}.comparison-grid{grid-template-columns:1fr 1fr}.testimonials-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.footer-inner{grid-template-columns:1fr;gap:32px;padding:40px 20px}.footer-right{text-align:left}.footer-bottom{padding:16px 20px}.footer-bottom .container{flex-direction:column;gap:6px}.hero-stats{flex-wrap:wrap;gap:16px}.hero-stat-divider{display:none}.section-header{margin-bottom:40px}.table-controls{flex-wrap:wrap}.search-input{max-width:100%;flex:1 1 100%}}
+@media(max-width:480px){.comparison-grid{grid-template-columns:1fr}.hero-ctas{flex-direction:column}.hero-headline{font-size:28px}.stat-value{font-size:18px}.modal{border-radius:var(--radius-lg) var(--radius-lg) 0 0;position:fixed;bottom:0;max-width:100%;max-height:85vh}.modal-overlay{align-items:flex-end;padding:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body class="page-loading">
+
+<!-- PAGE LOADER -->
+<div class="page-loader" id="pageLoader">
+  <div class="loader-logo">
+    <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+      <rect width="36" height="36" rx="8" fill="#00C853"/>
+      <text x="7" y="22" font-family="serif" font-size="14" font-weight="700" fill="white">₨</text>
+      <path d="M20 22 L28 10" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M24 10 L28 10 L28 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>FreelanceFlow</span>
+  </div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+  <div class="loader-status" id="loaderStatus">Fetching live PKR rates…</div>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack">
+    <span class="ticker-item"><span class="ticker-skeleton"></span><span class="ticker-skeleton sm"></span></span>
+    <span class="ticker-item"><span class="ticker-skeleton"></span><span class="ticker-skeleton sm"></span></span>
+    <span class="ticker-item"><span class="ticker-skeleton"></span><span class="ticker-skeleton sm"></span></span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <a href="#" class="logo" aria-label="FreelanceFlow Home">
+    <svg class="logo-mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="36" height="36" rx="8" fill="#00C853"/>
+      <text x="7" y="22" font-family="serif" font-size="14" font-weight="700" fill="white">₨</text>
+      <path d="M20 22 L28 10" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M24 10 L28 10 L28 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="logo-text">FreelanceFlow</span>
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="#dashboard" class="nav-link" data-section="dashboard">Dashboard</a>
+    <a href="#calculator" class="nav-link" data-section="calculator">Calculator</a>
+    <a href="#tax" class="nav-link" data-section="tax">FBR Tax</a>
+    <a href="#history" class="nav-link" data-section="history">History</a>
+  </div>
+  <div class="nav-actions">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <span class="theme-icon sun">☀</span>
+      <span class="theme-icon moon">☽</span>
+    </button>
+    <button class="btn-primary pulse-btn" id="addIncomeNavBtn">+ Add Income</button>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobileNav">
+  <a href="#dashboard" class="mobile-nav-link" onclick="closeMobileNav()">Dashboard</a>
+  <a href="#calculator" class="mobile-nav-link" onclick="closeMobileNav()">Calculator</a>
+  <a href="#tax" class="mobile-nav-link" onclick="closeMobileNav()">FBR Tax</a>
+  <a href="#history" class="mobile-nav-link" onclick="closeMobileNav()">History</a>
+  <button class="btn-primary full-width" style="margin-top:8px" onclick="openModal();closeMobileNav()">+ Add Income</button>
+</div>
+<div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileNav()"></div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <canvas id="particleCanvas" class="particle-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-left">
+      <div class="hero-eyebrow enter-seq" style="--seq:1">
+        <span class="dot-pulse"></span>
+        <span id="liveRateDisplay">Fetching live PKR rate…</span>
+      </div>
+      <h1 class="hero-headline enter-seq" style="--seq:2">Every dollar you earn.<br/><span class="accent-text">Every rupee you keep.</span></h1>
+      <p class="hero-sub enter-seq" style="--seq:3">The only income dashboard built for Fiverr, Upwork & Freelancer.com earners in Pakistan. See your real take-home after platform fees, Payoneer cuts, and FBR tax — with live PKR rates.</p>
+      <div class="hero-ctas enter-seq" style="--seq:4">
+        <button class="btn-primary ripple" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">Start Tracking</button>
+        <button class="btn-ghost" onclick="document.getElementById('calculator').scrollIntoView({behavior:'smooth'})">See How It Works →</button>
+      </div>
+      <div class="hero-stats enter-seq" style="--seq:5">
+        <div class="hero-stat"><span class="hero-stat-num" data-count="2400">0</span><span class="hero-stat-label">freelancers tracked</span></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat"><span class="hero-stat-prefix">avg.</span><span class="hero-stat-num" data-count="47">0</span><span class="hero-stat-suffix">%</span><span class="hero-stat-label">fee savings found</span></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat"><span class="hero-stat-prefix">₨</span><span class="hero-stat-num" data-count="842000">0</span><span class="hero-stat-label">tracked this month</span></div>
+      </div>
+    </div>
+    <div class="hero-right enter-seq" style="--seq:3">
+      <div class="hero-3d-wrap" id="hero3D">
+        <canvas id="hero3DCanvas" class="hero-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll-hint"><span>Scroll to explore</span><div class="scroll-arrow"></div></div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="section" id="dashboard">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">Your Dashboard</div>
+      <h2 class="section-title">Income at a glance</h2>
+      <p class="section-sub">All figures recalculated in real-time using live PKR exchange rates.</p>
+    </div>
+    <div class="stats-grid reveal-stagger">
+      <div class="stat-card tilt-card"><div class="stat-icon green">₨</div><div class="stat-body"><div class="stat-label">Total Earned — This Month</div><div class="stat-value" id="statMonthly">₨ 0</div><div class="stat-delta" id="statMonthlyDelta">—</div></div><div class="card-glare"></div></div>
+      <div class="stat-card tilt-card"><div class="stat-icon gold">₨</div><div class="stat-body"><div class="stat-label">Total Earned — This Year</div><div class="stat-value" id="statYearly">₨ 0</div><div class="stat-delta" id="statYearlyDelta">—</div></div><div class="card-glare"></div></div>
+      <div class="stat-card tilt-card"><div class="stat-icon blue">🏆</div><div class="stat-body"><div class="stat-label">Best Platform</div><div class="stat-value" id="statBestPlatform">—</div><div class="stat-delta" id="statBestPlatformSub">No data yet</div></div><div class="card-glare"></div></div>
+      <div class="stat-card tilt-card"><div class="stat-icon red">%</div><div class="stat-body"><div class="stat-label">Effective Tax Rate</div><div class="stat-value" id="statTaxRate">0%</div><div class="stat-delta">FBR 2024-25 slabs</div></div><div class="card-glare"></div></div>
+      <div class="stat-card tilt-card"><div class="stat-icon green">✓</div><div class="stat-body"><div class="stat-label">Real Earnings %</div><div class="stat-value" id="statRealPct">0%</div><div class="stat-delta">After all platform & withdrawal fees</div></div><div class="card-glare"></div></div>
+      <div class="stat-card tilt-card"><div class="stat-icon gold">◈</div><div class="stat-body"><div class="stat-label">Active Projects</div><div class="stat-value" id="statProjects">0</div><div class="stat-delta" id="statProjectsSub">—</div></div><div class="card-glare"></div></div>
+    </div>
+    <div class="chart-section reveal-item">
+      <div class="chart-header">
+        <div><div class="section-eyebrow">Income Chart</div><h3 class="chart-title">6-Month Earnings</h3></div>
+        <div class="chart-toggle">
+          <button class="toggle-btn active" id="togglePKR" onclick="setChartCurrency('PKR')">PKR ₨</button>
+          <button class="toggle-btn" id="toggleUSD" onclick="setChartCurrency('USD')">USD $</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><svg id="incomeChart" class="income-svg" viewBox="0 0 700 260" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM BREAKDOWN -->
+<section class="section section-alt" id="platforms">
+  <div class="container">
+    <div class="two-col-layout">
+      <div class="reveal-item">
+        <div class="section-eyebrow">Platform Breakdown</div>
+        <h2 class="section-title">Where your money comes from</h2>
+        <p class="section-sub">Based on income you've logged. Each platform's real take-home after fees.</p>
+        <div class="platform-legend" id="platformLegend"><div class="empty-state"><svg class="empty-icon" viewBox="0 0 80 60" fill="none"><rect x="8" y="16" width="64" height="36" rx="6" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><circle cx="40" cy="34" r="12" stroke="currentColor" stroke-width="2"/></svg><p>Log your first income entry to see platform breakdown.</p></div></div>
+      </div>
+      <div class="donut-wrap reveal-item">
+        <svg id="donutChart" viewBox="0 0 220 220" class="donut-svg">
+          <circle cx="110" cy="110" r="80" fill="none" stroke="var(--divider)" stroke-width="28"/>
+          <text x="110" y="108" text-anchor="middle" font-family="DM Mono,monospace" font-size="14" fill="var(--text-3)">No data</text>
+          <text x="110" y="126" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="var(--text-3)">yet</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALCULATOR -->
+<section class="section" id="calculator">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">Signature Feature</div>
+      <h2 class="section-title">Real Earnings Calculator</h2>
+      <p class="section-sub">See exactly what you pocket after every deduction — platform fee, withdrawal, and FBR tax.</p>
+    </div>
+    <div class="calc-layout">
+      <div class="calc-inputs reveal-item">
+        <div class="input-group">
+          <label class="input-label">Gross Amount</label>
+          <div class="input-row">
+            <select class="input-select" id="calcCurrency" onchange="runCalculator()"><option value="USD">USD $</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option><option value="PKR">PKR ₨</option></select>
+            <input type="number" class="input-field" id="calcAmount" placeholder="100" value="100" oninput="runCalculator()" />
+          </div>
+        </div>
+        <div class="input-group" style="margin-top:12px">
+          <label class="input-label">Platform</label>
+          <select class="input-select full" id="calcPlatform" onchange="runCalculator()"><option value="fiverr">Fiverr (20% fee)</option><option value="upwork">Upwork (20% / 10%)</option><option value="freelancer">Freelancer.com (10% or $3)</option><option value="direct">Direct Client (0%)</option></select>
+        </div>
+        <div class="input-group" style="margin-top:12px">
+          <label class="input-label">Withdrawal Method</label>
+          <select class="input-select full" id="calcWithdrawal" onchange="runCalculator()"><option value="payoneer">Payoneer (2%)</option><option value="wise">Wise (0.5%)</option><option value="bank">Bank Transfer (1.5%)</option><option value="none">Direct PKR (0%)</option></select>
+        </div>
+        <div class="calc-hint" style="margin-top:12px">Results update live as you type ↗</div>
+      </div>
+      <div class="calc-result reveal-item" id="calcResult">
+        <div class="calc-placeholder"><div class="calc-placeholder-icon">₨</div><div class="calc-placeholder-text">Enter an amount to see breakdown</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM COMPARISON -->
+<section class="section section-alt" id="comparison">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">Platform Comparison</div>
+      <h2 class="section-title">$500 gross — who pays the most?</h2>
+      <p class="section-sub">Calculated with live PKR rates and Payoneer withdrawal. Hover each card for details.</p>
+    </div>
+    <div class="comparison-grid reveal-stagger" id="comparisonGrid"></div>
+  </div>
+</section>
+
+<!-- FBR TAX -->
+<section class="section" id="tax">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">FBR 2024-25</div>
+      <h2 class="section-title">Pakistan Tax Calculator</h2>
+      <p class="section-sub">Based on the latest FBR income tax slabs. Enter your annual PKR income to see exactly what you owe.</p>
+    </div>
+    <div class="tax-layout">
+      <div class="tax-input-card reveal-item">
+        <div class="input-group"><label class="input-label">Annual Income (PKR)</label><input type="number" class="input-field full" id="taxAnnualIncome" placeholder="1200000" oninput="calcFBRTax()" /></div>
+        <div class="tax-slabs">
+          <div class="slab-title">FBR 2024-25 Slabs</div>
+          <div class="slab-row" data-slab="0"><span>Up to Rs. 600,000</span><span class="slab-rate zero">0%</span></div>
+          <div class="slab-row" data-slab="1"><span>Rs. 600,001 – 1,200,000</span><span class="slab-rate low">2.5%</span></div>
+          <div class="slab-row" data-slab="2"><span>Rs. 1,200,001 – 2,400,000</span><span class="slab-rate mid">12.5%</span></div>
+          <div class="slab-row" data-slab="3"><span>Rs. 2,400,001 – 3,600,000</span><span class="slab-rate high">17.5%</span></div>
+          <div class="slab-row" data-slab="4"><span>Above Rs. 3,600,000</span><span class="slab-rate top">22.5%</span></div>
+        </div>
+      </div>
+      <div class="tax-result-card reveal-item" id="taxResult"><div class="calc-placeholder"><div class="calc-placeholder-icon">📋</div><div class="calc-placeholder-text">Enter your annual income above — updates live</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- GOAL TRACKER -->
+<section class="section section-alt" id="goals">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">Goal Tracker</div>
+      <h2 class="section-title">Monthly income target</h2>
+    </div>
+    <div class="goal-layout">
+      <div class="goal-input-card reveal-item">
+        <div class="input-group"><label class="input-label">Set Monthly Goal (PKR)</label><input type="number" class="input-field full" id="goalInput" placeholder="200000" oninput="setGoal()" /></div>
+        <div class="goal-presets">
+          <div class="goal-preset-label">Quick set:</div>
+          <button class="preset-btn" onclick="setGoalPreset(100000)">₨100k</button>
+          <button class="preset-btn" onclick="setGoalPreset(200000)">₨200k</button>
+          <button class="preset-btn" onclick="setGoalPreset(500000)">₨500k</button>
+          <button class="preset-btn" onclick="setGoalPreset(1000000)">₨1M</button>
+        </div>
+      </div>
+      <div class="goal-display reveal-item">
+        <div class="goal-ring-wrap">
+          <svg class="goal-ring" viewBox="0 0 180 180">
+            <circle class="goal-ring-bg" cx="90" cy="90" r="70"/>
+            <circle class="goal-ring-fill" id="goalRingFill" cx="90" cy="90" r="70" stroke-dasharray="439.82" stroke-dashoffset="439.82"/>
+          </svg>
+          <div class="goal-ring-center"><div class="goal-pct" id="goalPct">0%</div><div class="goal-pct-label">of goal</div></div>
+        </div>
+        <div class="goal-message" id="goalMessage">Set a goal to start tracking.</div>
+        <div class="goal-stats" id="goalStats"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADD INCOME -->
+<section class="section" id="addIncome">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">Log Payment</div>
+      <h2 class="section-title">Add a new income entry</h2>
+    </div>
+    <div class="add-income-card reveal-item">
+      <div class="form-row">
+        <div class="input-group">
+          <label class="input-label">Amount</label>
+          <div class="input-row">
+            <select class="input-select" id="incomeCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="PKR">PKR</option></select>
+            <input type="number" class="input-field" id="incomeAmount" placeholder="250" oninput="updateIncomePreview()" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Platform</label>
+          <select class="input-select full" id="incomePlatform" onchange="updateIncomePreview()"><option value="fiverr">Fiverr</option><option value="upwork">Upwork</option><option value="freelancer">Freelancer.com</option><option value="direct">Direct Client</option><option value="other">Other</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="input-group"><label class="input-label">Project Name</label><input type="text" class="input-field full" id="incomeProject" placeholder="Logo Design for Ahmed" /></div>
+        <div class="input-group"><label class="input-label">Date</label><input type="date" class="input-field full" id="incomeDate" /></div>
+      </div>
+      <div class="income-preview" id="incomePreview"><div class="preview-placeholder">Fill in the details to see your real earnings preview</div></div>
+      <button class="btn-primary full-width ripple" onclick="addIncome()">Save Income Entry</button>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="section section-alt" id="history">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">Income History</div>
+      <h2 class="section-title">All logged entries</h2>
+    </div>
+    <div class="table-controls reveal-item">
+      <input type="text" class="input-field search-input" id="historySearch" placeholder="Search by project or platform…" oninput="filterHistory()" />
+      <select class="input-select" id="historyPlatformFilter" onchange="filterHistory()"><option value="">All platforms</option><option value="fiverr">Fiverr</option><option value="upwork">Upwork</option><option value="freelancer">Freelancer.com</option><option value="direct">Direct Client</option><option value="other">Other</option></select>
+      <button class="btn-ghost" onclick="exportCSV()">Export CSV ↓</button>
+    </div>
+    <div class="table-wrap reveal-item">
+      <table class="income-table" id="incomeTable">
+        <thead><tr>
+          <th onclick="sortHistory('date')">Date <span class="sort-indicator" id="sort-date">↕</span></th>
+          <th onclick="sortHistory('project')">Project <span class="sort-indicator" id="sort-project">↕</span></th>
+          <th>Platform</th>
+          <th onclick="sortHistory('gross')">Gross <span class="sort-indicator" id="sort-gross">↕</span></th>
+          <th>PKR Value</th><th>Real Earnings</th><th></th>
+        </tr></thead>
+        <tbody id="historyBody">
+          <tr><td colspan="7" class="table-empty"><div class="empty-state"><svg class="empty-icon" viewBox="0 0 80 60" fill="none"><rect x="8" y="8" width="64" height="44" rx="6" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><line x1="20" y1="22" x2="60" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="20" y1="30" x2="50" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><p>No income logged yet. Add your first entry above.</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="testimonials">
+  <div class="container">
+    <div class="section-header reveal-item">
+      <div class="section-eyebrow">Freelancers Love It</div>
+      <h2 class="section-title">Built for real people, real rupees</h2>
+      <p class="section-sub">Hover a card to see their actual numbers.</p>
+    </div>
+    <div class="testimonials-grid reveal-stagger">
+      <div class="testimonial-card flip-card"><div class="flip-inner">
+        <div class="flip-front"><div class="testi-quote">"Finally I know what I actually earn. Before this I had no idea how much Fiverr was taking. FreelanceFlow changed how I price my services."</div><div class="testi-author"><div class="testi-avatar" style="background:var(--green-dim);color:var(--green)">SA</div><div><div class="testi-name">Saad Ahmed</div><div class="testi-meta">Lahore · Fiverr · Graphic Design</div></div></div><div class="flip-hint">Hover to see numbers →</div></div>
+        <div class="flip-back"><div class="flip-stat-title">Saad's Numbers</div><div class="flip-stat"><span>Monthly Gross</span><span>$420</span></div><div class="flip-stat"><span>Platform Fee Lost</span><span>$84</span></div><div class="flip-stat"><span>Real Earnings</span><span>₨ 81,000</span></div><div class="flip-stat highlight"><span>Monthly Savings Found</span><span>₨ 12,000</span></div></div>
+      </div></div>
+      <div class="testimonial-card flip-card"><div class="flip-inner">
+        <div class="flip-front"><div class="testi-quote">"The FBR calculator alone is worth it. I was overpaying tax. This showed me I was actually under the threshold. Saved me Rs. 30,000."</div><div class="testi-author"><div class="testi-avatar" style="background:#f3e8ff;color:#7c3aed">FN</div><div><div class="testi-name">Fatima Noor</div><div class="testi-meta">Karachi · Upwork · Content Writing</div></div></div><div class="flip-hint">Hover to see numbers →</div></div>
+        <div class="flip-back"><div class="flip-stat-title">Fatima's Numbers</div><div class="flip-stat"><span>Annual Income</span><span>₨ 540,000</span></div><div class="flip-stat"><span>FBR Tax Owed</span><span>₨ 0</span></div><div class="flip-stat highlight"><span>Tax Saved</span><span>₨ 30,000</span></div><div class="flip-stat"><span>Platform</span><span>Upwork Top Rated</span></div></div>
+      </div></div>
+      <div class="testimonial-card flip-card"><div class="flip-inner">
+        <div class="flip-front"><div class="testi-quote">"I switched from Fiverr to direct clients after seeing the platform comparison. My real earnings went up 28% for exactly the same work."</div><div class="testi-author"><div class="testi-avatar" style="background:var(--gold-dim);color:#92400e">UH</div><div><div class="testi-name">Usman Haider</div><div class="testi-meta">Islamabad · Direct · Web Development</div></div></div><div class="flip-hint">Hover to see numbers →</div></div>
+        <div class="flip-back"><div class="flip-stat-title">Usman's Numbers</div><div class="flip-stat"><span>Before (Fiverr)</span><span>₨ 95,000/mo</span></div><div class="flip-stat"><span>After (Direct)</span><span>₨ 121,600/mo</span></div><div class="flip-stat highlight"><span>Monthly Gain</span><span>+₨ 26,600</span></div><div class="flip-stat"><span>Stack</span><span>React / Next.js</span></div></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-left">
+      <a href="#" class="logo">
+        <svg class="logo-mark" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="8" fill="#00C853"/><text x="7" y="22" font-family="serif" font-size="14" font-weight="700" fill="white">₨</text><path d="M20 22 L28 10" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M24 10 L28 10 L28 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="logo-text">FreelanceFlow</span>
+      </a>
+      <p class="footer-tagline">Built for Pakistani freelancers.<br/>Every rupee matters.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-link-group"><div class="footer-link-title">Tools</div><a href="#calculator" class="footer-link">Real Earnings Calc</a><a href="#tax" class="footer-link">FBR Tax Calculator</a><a href="#comparison" class="footer-link">Platform Comparison</a><a href="#goals" class="footer-link">Goal Tracker</a></div>
+      <div class="footer-link-group"><div class="footer-link-title">Data</div><a href="#dashboard" class="footer-link">Dashboard</a><a href="#history" class="footer-link">Income History</a><a href="#platforms" class="footer-link">Platform Breakdown</a></div>
+    </div>
+    <div class="footer-right">
+      <div class="footer-built">Built by <strong>Muhammad Taha Jaffar</strong></div>
+      <div class="footer-tech">Pure HTML · CSS · Vanilla JS · No libraries</div>
+      <div class="footer-social">
+        <a href="#" class="social-link" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.4.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4 1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
+        <a href="#" class="social-link" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.35-1.85 3.58 0 4.25 2.36 4.25 5.43v6.31zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM3.56 20.45h3.55V9H3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46C23.2 24 24 23.23 24 22.28V1.72C24 .77 23.2 0 22.23 0z"/></svg></a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom"><div class="container"><span>© 2024 FreelanceFlow. All data stored locally. No servers, no tracking.</span><span>Exchange rates by ExchangeRate-API.com</span></div></div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header"><h3 class="modal-title">Add Income Entry</h3><button class="modal-close" onclick="closeModalDirect()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="input-group"><label class="input-label">Amount</label><div class="input-row"><select class="input-select" id="modalCurrency"><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="PKR">PKR</option></select><input type="number" class="input-field" id="modalAmount" placeholder="250" oninput="updateModalPreview()" /></div></div>
+        <div class="input-group"><label class="input-label">Platform</label><select class="input-select full" id="modalPlatform" onchange="updateModalPreview()"><option value="fiverr">Fiverr</option><option value="upwork">Upwork</option><option value="freelancer">Freelancer.com</option><option value="direct">Direct Client</option><option value="other">Other</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="input-group"><label class="input-label">Project Name</label><input type="text" class="input-field full" id="modalProject" placeholder="Logo Design for Ahmed" /></div>
+        <div class="input-group"><label class="input-label">Date</label><input type="date" class="input-field full" id="modalDate" /></div>
+      </div>
+      <div class="income-preview" id="modalPreview"><div class="preview-placeholder">Fill in amount to see preview</div></div>
+    </div>
+    <div class="modal-footer"><button class="btn-ghost" onclick="closeModalDirect()">Cancel</button><button class="btn-primary ripple" onclick="addIncomeFromModal()">Save Entry</button></div>
+  </div>
+</div>
+
+<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:9999;width:100%;height:100%"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const State={rates:{USD:1,PKR:278.5,EUR:.92,GBP:.79,AED:3.67},ratesLoaded:false,incomes:[],chartCurrency:'PKR',sortKey:'date',sortDir:-1,goal:0,searchQuery:'',platformFilter:'',theme:'light'};
+const PF={fiverr:{pct:.20,label:'Fiverr',min:0},upwork:{pct:.20,label:'Upwork',min:0},freelancer:{pct:.10,label:'Freelancer.com',min:3},direct:{pct:0,label:'Direct Client',min:0},other:{pct:.05,label:'Other',min:0}};
+const WF={payoneer:{pct:.02,label:'Payoneer'},wise:{pct:.005,label:'Wise'},bank:{pct:.015,label:'Bank Transfer'},none:{pct:0,label:'Direct PKR'}};
+const PC={fiverr:'#00C853',upwork:'#FFB800',freelancer:'#3B82F6',direct:'#8B5CF6',other:'#9CA3AF'};
+const SLABS=[{max:600000,rate:0,base:0,prev:0},{max:1200000,rate:.025,base:0,prev:600000},{max:2400000,rate:.125,base:15000,prev:1200000},{max:3600000,rate:.175,base:165000,prev:2400000},{max:Infinity,rate:.225,base:375000,prev:3600000}];
+
+const fmtPKR=n=>'₨ '+Math.round(n).toLocaleString('en-PK');
+const fmtUSD=n=>'$'+n.toFixed(2);
+const todayStr=()=>new Date().toISOString().split('T')[0];
+function getPKR(a,c){if(c==='PKR')return a;return(a/(State.rates[c]||1))*State.rates.PKR}
+function getUSD(a,c){if(c==='USD')return a;if(c==='PKR')return a/State.rates.PKR;return a/(State.rates[c]||1)}
+function pfeeAmt(g,k){const p=PF[k];if(!p)return 0;return Math.max(g*p.pct,p.min)}
+function wfeeAmt(n,k){return n*((WF[k]||WF.payoneer).pct)}
+function calcFBR(pkr){let s=0;for(let i=SLABS.length-1;i>=0;i--){if(pkr>(i===0?0:SLABS[i-1].max)){s=i;break}}const sl=SLABS[s];const tax=s===0?0:sl.base+(pkr-sl.prev)*sl.rate;return{tax,slab:s,effectiveRate:pkr>0?tax/pkr:0}}
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+
+// STORAGE
+function save(){try{localStorage.setItem('ff_inc',JSON.stringify(State.incomes));localStorage.setItem('ff_goal',State.goal);localStorage.setItem('ff_theme',State.theme)}catch(e){}}
+function load(){try{const i=localStorage.getItem('ff_inc');if(i)State.incomes=JSON.parse(i);const g=localStorage.getItem('ff_goal');if(g)State.goal=parseFloat(g)||0;const t=localStorage.getItem('ff_theme');if(t)State.theme=t}catch(e){}}
+
+// TOAST
+let toastT=null;
+function showToast(msg,type='success',dur=2800){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+type;clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),dur)}
+
+// RIPPLE
+function addRipple(e){const b=e.currentTarget;const r=b.getBoundingClientRect();const sz=Math.max(r.width,r.height)*2;const w=document.createElement('span');w.className='ripple-wave';w.style.cssText=`width:${sz}px;height:${sz}px;left:${e.clientX-r.left-sz/2}px;top:${e.clientY-r.top-sz/2}px`;b.appendChild(w);setTimeout(()=>w.remove(),600)}
+function initRipples(){document.querySelectorAll('.ripple').forEach(b=>b.addEventListener('click',addRipple))}
+
+// THEME
+function applyTheme(t){State.theme=t;document.documentElement.setAttribute('data-theme',t);save()}
+function initTheme(){applyTheme(State.theme);document.getElementById('themeToggle').addEventListener('click',()=>applyTheme(State.theme==='light'?'dark':'light'))}
+
+// MOBILE NAV
+function closeMobileNav(){document.getElementById('mobileNav').classList.remove('open');document.getElementById('mobileNavOverlay').classList.remove('open');document.getElementById('navHamburger').classList.remove('open')}
+function initMobileNav(){const b=document.getElementById('navHamburger'),n=document.getElementById('mobileNav'),o=document.getElementById('mobileNavOverlay');b.addEventListener('click',()=>{const op=n.classList.toggle('open');o.classList.toggle('open',op);b.classList.toggle('open',op)})}
+
+// SCROLL SPY
+function initScrollSpy(){const secs=['dashboard','calculator','tax','history'].map(id=>document.getElementById(id));const links=document.querySelectorAll('.nav-link[data-section]');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)links.forEach(l=>l.classList.toggle('active',l.dataset.section===e.target.id))})},{rootMargin:'-40% 0px -55% 0px'});secs.forEach(s=>s&&obs.observe(s))}
+
+// LOADER
+function setLoader(pct,msg){const f=document.getElementById('loaderFill'),s=document.getElementById('loaderStatus');if(f)f.style.width=pct+'%';if(s&&msg)s.textContent=msg}
+function hideLoader(){const l=document.getElementById('pageLoader');l.classList.add('done');document.body.classList.remove('page-loading');setTimeout(()=>l&&l.remove(),600)}
+
+// RATES
+async function fetchRates(){setLoader(30,'Connecting to exchange rate API…');try{const r=await fetch('https://v6.exchangerate-api.com/v6/56ded713851f495723b3e430/latest/USD');if(!r.ok)throw 0;const d=await r.json();const c=d.conversion_rates;State.rates={USD:1,PKR:c.PKR,EUR:c.EUR,GBP:c.GBP,AED:c.AED};State.ratesLoaded=true;setLoader(70,'Rates loaded. Building dashboard…')}catch{setLoader(70,'Using fallback rates…')}buildTicker();updateLiveRate();updateDashboard();buildComparison();runCalculator();setLoader(100,'Ready!');setTimeout(hideLoader,400)}
+
+// TICKER
+function buildTicker(){const r=State.rates;const pairs=[{p:'USD/PKR',v:r.PKR.toFixed(2),up:true,c:'+0.31'},{p:'EUR/PKR',v:(r.PKR/r.EUR).toFixed(2),up:true,c:'+0.15'},{p:'GBP/PKR',v:(r.PKR/r.GBP).toFixed(2),up:false,c:'-0.08'},{p:'AED/PKR',v:(r.PKR/r.AED).toFixed(2),up:true,c:'+0.22'},{p:'USD/EUR',v:r.EUR.toFixed(4),up:true,c:'+0.04'},{p:'USD/GBP',v:r.GBP.toFixed(4),up:false,c:'-0.02'},{p:'USD/AED',v:r.AED.toFixed(4),up:true,c:'+0.00'}];const all=[...pairs,...pairs,...pairs];document.getElementById('tickerTrack').innerHTML=all.map(p=>`<span class="ticker-item"><span class="pair">${p.p}</span><span class="rate">${p.v}</span><span class="${p.up?'chg-up':'chg-dn'}">${p.up?'▲':'▼'} ${p.c}%</span></span>`).join('')}
+function updateLiveRate(){const e=document.getElementById('liveRateDisplay');if(e)e.textContent=`USD/PKR live: ₨ ${State.rates.PKR.toFixed(2)}`}
+
+// PARTICLES
+function initParticles(){const cv=document.getElementById('particleCanvas');if(!cv)return;const ctx=cv.getContext('2d');const syms=['₨','$','€','£','₨','$','₨'];let pts=[];let W,H;function resize(){W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight}resize();window.addEventListener('resize',resize);function spawn(){return{x:Math.random()*W,y:H+24,sym:syms[Math.floor(Math.random()*syms.length)],sz:11+Math.random()*14,sp:.35+Math.random()*.55,op:0,max:.05+Math.random()*.09,fi:true,dr:(Math.random()-.5)*.25}}for(let i=0;i<20;i++){const p=spawn();p.y=Math.random()*H;p.op=Math.random()*.07;pts.push(p)}function tick(){ctx.clearRect(0,0,W,H);if(Math.random()<.03&&pts.length<32)pts.push(spawn());pts=pts.filter(p=>{p.y-=p.sp;p.x+=p.dr;if(p.fi){p.op+=.003;if(p.op>=p.max)p.fi=false}else if(p.y<H*.25)p.op-=.002;if(p.y<-30||p.op<=0)return false;ctx.save();ctx.globalAlpha=p.op;ctx.font=`${p.sz}px "DM Mono",monospace`;ctx.fillStyle=State.theme==='dark'?'#ffffff':'#111827';ctx.fillText(p.sym,p.x,p.y);ctx.restore();return true});requestAnimationFrame(tick)}tick()}
+
+// HERO 3D CANVAS
+function initHero3D(){const cv=document.getElementById('hero3DCanvas');if(!cv)return;const ctx=cv.getContext('2d');let W,H,tRX=0,tRY=0,cRX=0,cRY=0,frame=0;function resize(){const r=cv.parentElement.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;cv.style.width=r.width+'px';cv.style.height=r.height+'px';ctx.scale(dpr,dpr);W=r.width;H=r.height}resize();window.addEventListener('resize',resize);document.addEventListener('mousemove',e=>{tRX=((e.clientY-window.innerHeight/2)/(window.innerHeight/2))*-10;tRY=((e.clientX-window.innerWidth/2)/(window.innerWidth/2))*14});
+function proj(x,y,z,rx,ry){const cX=Math.cos(rx),sX=Math.sin(rx),cY=Math.cos(ry),sY=Math.sin(ry);const y2=y*cX-z*sX,z2=y*sX+z*cX,x2=x*cY+z2*sY,z3=-x*sY+z2*cY;const f=600,sc=f/(f+z3);return{x:x2*sc,y:y2*sc,sc}}
+function rr(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}}
+function getC(){return State.theme==='dark'?{bg:'#161B22',card:'#1C2128',border:'#30363D',text:'#E6EDF3',t2:'#8B949E',green:'#00C853',gold:'#FFB800',bar:'#21262D'}:{bg:'#FFFFFF',card:'#F8FAFC',border:'#E7EDF5',text:'#111827',t2:'#6B7280',green:'#00C853',gold:'#FFB800',bar:'#E5E7EB'}}
+function draw(rx,ry){ctx.clearRect(0,0,W,H);const C=getC();frame++;const cW=340,cH=220,ox=W/2,oy=H/2;const corn=[[-cW/2,-cH/2,0],[cW/2,-cH/2,0],[cW/2,cH/2,0],[-cW/2,cH/2,0]];const pts=corn.map(([x,y,z])=>{const p=proj(x,y,z,rx,ry);return{x:ox+p.x,y:oy+p.y,s:p.sc}});ctx.save();ctx.shadowColor='rgba(0,0,0,.18)';ctx.shadowBlur=32;ctx.shadowOffsetY=12;ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.forEach((p,i)=>i>0&&ctx.lineTo(p.x,p.y));ctx.closePath();ctx.fillStyle=C.bg;ctx.fill();ctx.restore();ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.forEach((p,i)=>i>0&&ctx.lineTo(p.x,p.y));ctx.closePath();ctx.fillStyle=C.bg;ctx.fill();ctx.strokeStyle=C.border;ctx.lineWidth=1.5;ctx.stroke();const aS=(pts[0].s+pts[1].s+pts[2].s+pts[3].s)/4,oX=(pts[0].x+pts[1].x+pts[2].x+pts[3].x)/4,oY=(pts[0].y+pts[1].y+pts[2].y+pts[3].y)/4;ctx.save();ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.forEach((p,i)=>i>0&&ctx.lineTo(p.x,p.y));ctx.closePath();ctx.clip();const hY=oY-cH/2*aS+14*aS;ctx.fillStyle=C.text;ctx.font=`${Math.round(9+600*aS/100)}px "DM Mono",monospace`;ctx.textAlign='center';ctx.fillText('FreelanceFlow',oX,hY+4*aS);ctx.beginPath();ctx.arc(oX-64*aS,hY+aS,4*aS,0,Math.PI*2);ctx.fillStyle=C.green;ctx.fill();const bx=oX+44*aS,by=hY-7*aS;rr(bx,by,32*aS,14*aS,3*aS,'rgba(0,200,83,.15)',null);ctx.fillStyle=C.green;ctx.font=`${Math.round(7*aS)}px "DM Mono",monospace`;ctx.fillText('LIVE',bx+16*aS,by+10*aS);const dY=oY-cH/2*aS+30*aS;ctx.beginPath();ctx.moveTo(pts[0].x+16*aS,dY);ctx.lineTo(pts[1].x-16*aS,dY);ctx.strokeStyle=C.border;ctx.lineWidth=1;ctx.stroke();const cTop=dY+10*aS,cH2=52*aS,cW2=88*aS,cGap=8*aS;const cards=[{l:'This Month',v:'₨ 142,800',d:'↑ 23%',col:C.green},{l:'Fee Lost',v:'₨ 28,560',d:'Fiverr 20%',col:C.t2},{l:'Real Earn',v:'₨ 108,300',d:'After cuts',col:C.green}];const tW=cards.length*cW2+(cards.length-1)*cGap,sX=oX-tW/2;cards.forEach((c,i)=>{const cx=sX+i*(cW2+cGap);rr(cx,cTop,cW2,cH2,4*aS,C.card,C.border);ctx.fillStyle=C.t2;ctx.font=`${Math.round(6.5*aS)}px "Inter",sans-serif`;ctx.textAlign='left';ctx.fillText(c.l,cx+8*aS,cTop+14*aS);ctx.fillStyle=c.col;ctx.font=`500 ${Math.round(8.5*aS)}px "DM Mono",monospace`;ctx.fillText(c.v,cx+8*aS,cTop+28*aS);ctx.fillStyle=c.col;ctx.font=`${Math.round(6*aS)}px "Inter",sans-serif`;ctx.fillText(c.d,cx+8*aS,cTop+40*aS)});const chTop=cTop+cH2+10*aS,chH=44*aS,chW=cW*aS-32*aS,chX=oX-chW/2;const bars=[.42,.58,.35,.78,.65,.92];const pulse=(Math.sin(frame*.04)+1)/2;const bw=(chW/bars.length)-5*aS;bars.forEach((h,i)=>{const bx2=chX+i*(chW/bars.length),bh=h*chH,by2=chTop+chH-bh,isL=i===bars.length-1;ctx.save();ctx.globalAlpha=isL?.85+pulse*.15:1;if(isL){ctx.shadowColor=C.green;ctx.shadowBlur=8*pulse}rr(bx2,by2,bw,bh,2*aS,isL?C.green:C.bar,null);ctx.restore()});['Jan','Feb','Mar','Apr','May','Jun'].forEach((m,i)=>{ctx.fillStyle=C.t2;ctx.font=`${Math.round(6*aS)}px "DM Mono",monospace`;ctx.textAlign='center';ctx.fillText(m,chX+i*(chW/bars.length)+bw/2,chTop+chH+10*aS)});const doty=chTop+chH+22*aS;[{l:'Fiverr 48%',col:C.green},{l:'Upwork 31%',col:C.gold},{l:'Direct 21%',col:'#8B5CF6'}].reduce((dx,p)=>{ctx.beginPath();ctx.arc(dx,doty-2*aS,4*aS,0,Math.PI*2);ctx.fillStyle=p.col;ctx.fill();ctx.fillStyle=C.t2;ctx.textAlign='left';ctx.font=`${Math.round(7*aS)}px "Inter",sans-serif`;ctx.fillText(p.l,dx+8*aS,doty);return dx+68*aS},oX-90*aS);const gx=oX+(tRY/14)*cW*aS*.3,gy=oY+(tRX/10)*cH*aS*.3,grd=ctx.createRadialGradient(gx,gy,0,gx,gy,100*aS);grd.addColorStop(0,'rgba(255,255,255,.12)');grd.addColorStop(1,'rgba(255,255,255,0)');ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.forEach((p,i)=>i>0&&ctx.lineTo(p.x,p.y));ctx.closePath();ctx.fillStyle=grd;ctx.fill();ctx.restore()}
+function anim(){cRX+=(tRX*.017-cRX)*.08;cRY+=(tRY*.017-cRY)*.08;const aX=Math.sin(Date.now()*.0006)*.04,aY=Math.cos(Date.now()*.0004)*.07;draw(cRX+aX*.3,cRY+aY*.3);requestAnimationFrame(anim)}anim()}
+
+// HERO COUNTERS
+function initHeroCounters(){const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;const el=e.target,target=parseInt(el.dataset.count,10),dur=1400,t0=performance.now();const ease=t=>1-Math.pow(1-t,3);function step(now){const p=Math.min((now-t0)/dur,1);el.textContent=Math.round(ease(p)*target).toLocaleString('en-PK');if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step);obs.unobserve(el)})},{threshold:.6});document.querySelectorAll('[data-count]').forEach(el=>obs.observe(el))}
+
+// 3D TILT
+function initTilt(){document.querySelectorAll('.tilt-card').forEach(card=>{const g=card.querySelector('.card-glare');card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),dx=(e.clientX-r.left-r.width/2)/(r.width/2),dy=(e.clientY-r.top-r.height/2)/(r.height/2);card.style.transform=`perspective(800px) rotateX(${-dy*10}deg) rotateY(${dx*10}deg) scale(1.02)`;if(g){const gx=((e.clientX-r.left)/r.width)*100,gy=((e.clientY-r.top)/r.height)*100;g.style.cssText=`background:radial-gradient(circle at ${gx}% ${gy}%,rgba(255,255,255,.22) 0%,transparent 60%);opacity:1`}});card.addEventListener('mouseleave',()=>{card.style.transform='perspective(800px) rotateX(0) rotateY(0) scale(1)';if(g)g.style.opacity='0'})})}
+
+// SCROLL REVEAL
+function initReveal(){const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.08,rootMargin:'0px 0px -32px 0px'});document.querySelectorAll('.reveal-item,.reveal-stagger').forEach(el=>obs.observe(el))}
+
+// CONFETTI
+function fireConfetti(){const cv=document.getElementById('confettiCanvas');if(!cv)return;const ctx=cv.getContext('2d');cv.width=window.innerWidth;cv.height=window.innerHeight;const pieces=Array.from({length:80},()=>({x:Math.random()*cv.width,y:-10,w:6+Math.random()*8,h:8+Math.random()*6,col:['#00C853','#FFB800','#3B82F6','#EF4444','#8B5CF6'][Math.floor(Math.random()*5)],rot:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.15,vy:2+Math.random()*3,vx:(Math.random()-.5)*2}));function draw(){ctx.clearRect(0,0,cv.width,cv.height);let alive=false;pieces.forEach(p=>{p.y+=p.vy;p.x+=p.vx;p.rot+=p.rs;p.vy+=.05;if(p.y<cv.height+20)alive=true;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.col;ctx.globalAlpha=Math.max(0,1-p.y/cv.height);ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()});if(alive)requestAnimationFrame(draw);else ctx.clearRect(0,0,cv.width,cv.height)}draw()}
+
+// INCOME CHART
+function buildIncomeChart(){const svg=document.getElementById('incomeChart');if(!svg)return;const W=700,H=260,pL=64,pR=24,pT=28,pB=44,cW=W-pL-pR,cH=H-pT-pB;const now=new Date();const months=Array.from({length:6},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-(5-i),1);return{key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:d.toLocaleString('default',{month:'short'}),pkr:0,usd:0}});State.incomes.forEach(inc=>{const m=months.find(m=>m.key===inc.date.slice(0,7));if(m){m.usd+=getUSD(inc.amount,inc.currency);m.pkr+=getPKR(inc.amount,inc.currency)}});const isPKR=State.chartCurrency==='PKR';const vals=months.map(m=>isPKR?m.pkr:m.usd);const maxV=Math.max(...vals,1);let h=`<defs><filter id="bGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="bGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00C853" stop-opacity="1"/><stop offset="100%" stop-color="#00C853" stop-opacity=".6"/></linearGradient></defs>`;for(let i=0;i<=4;i++){const y=pT+cH-(i/4)*cH,val=maxV*i/4;const lbl=isPKR?(val>=1000?Math.round(val/1000)+'k':Math.round(val).toString()):'$'+(val>=1000?Math.round(val/1000)+'k':val.toFixed(0));h+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="var(--divider)" stroke-width="${i===0?1.5:1}" stroke-dasharray="${i===0?'':'4 3'}"/>`;h+=`<text x="${pL-8}" y="${y+4}" text-anchor="end" font-family="DM Mono,monospace" font-size="11" fill="var(--text-3)">${lbl}</text>`}const bGap=14,bw=(cW/months.length)-bGap;const bXs=[],bYs=[];months.forEach((m,i)=>{const val=isPKR?m.pkr:m.usd,barH=maxV>0?(val/maxV)*cH:0,bx=pL+i*(cW/months.length)+bGap/2,by=pT+cH,tip=isPKR?fmtPKR(val):fmtUSD(val);bXs.push(bx+bw/2);bYs.push(by-barH);h+=`<g class="chart-bar-group" data-val="${tip}"><rect x="${bx}" y="${by}" width="${bw}" height="0" rx="3" fill="url(#bGrad)" opacity=".9" class="chart-bar" data-ty="${by-barH}" data-th="${barH}" style="cursor:pointer"/><text x="${bx+bw/2}" y="${H-10}" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="var(--text-3)">${m.label}</text></g>`});if(vals.some(v=>v>0)){h+=`<polyline points="${bXs.map((x,i)=>`${x},${bYs[i]}`).join(' ')}" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-dasharray="4 3" opacity=".4"/>`;bXs.forEach((x,i)=>{if((isPKR?months[i].pkr:months[i].usd)>0)h+=`<circle cx="${x}" cy="${bYs[i]}" r="3" fill="var(--green)" opacity=".6"/>`})}svg.innerHTML=h;svg.querySelectorAll('.chart-bar').forEach((bar,i)=>{const ty=parseFloat(bar.dataset.ty),th=parseFloat(bar.dataset.th),baseY=pT+cH,t0=performance.now()+i*75,dur=750;function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}function anim(now){const e2=now-t0;if(e2<0){requestAnimationFrame(anim);return}const p=Math.min(e2/dur,1),ch=ease(p)*th;bar.setAttribute('y',baseY-ch);bar.setAttribute('height',ch);if(p<1)requestAnimationFrame(anim)}requestAnimationFrame(anim);bar.addEventListener('mouseenter',function(){this.setAttribute('filter','url(#bGlow)');this.setAttribute('opacity','1');svg.querySelectorAll('.bar-tooltip').forEach(t=>t.remove());const g=this.closest('.chart-bar-group'),bx2=parseFloat(this.getAttribute('x')),bw2=parseFloat(this.getAttribute('width')),by2=parseFloat(this.getAttribute('y')),tip=g.dataset.val,tx=bx2+bw2/2,ty2=by2-12;const ns='http://www.w3.org/2000/svg',tg=document.createElementNS(ns,'g');tg.setAttribute('class','bar-tooltip');const rt=document.createElementNS(ns,'rect');rt.setAttribute('x',tx-46);rt.setAttribute('y',ty2-22);rt.setAttribute('width','92');rt.setAttribute('height','24');rt.setAttribute('rx','4');rt.setAttribute('fill',State.theme==='dark'?'#E6EDF3':'#111827');const tx2=document.createElementNS(ns,'text');tx2.setAttribute('x',tx);tx2.setAttribute('y',ty2-5);tx2.setAttribute('text-anchor','middle');tx2.setAttribute('font-family','DM Mono,monospace');tx2.setAttribute('font-size','11');tx2.setAttribute('fill',State.theme==='dark'?'#111827':'#ffffff');tx2.textContent=tip;tg.appendChild(rt);tg.appendChild(tx2);svg.appendChild(tg)});bar.addEventListener('mouseleave',function(){this.removeAttribute('filter');this.setAttribute('opacity','.9');svg.querySelectorAll('.bar-tooltip').forEach(t=>t.remove())})})}
+function setChartCurrency(cur){State.chartCurrency=cur;document.getElementById('togglePKR').classList.toggle('active',cur==='PKR');document.getElementById('toggleUSD').classList.toggle('active',cur==='USD');buildIncomeChart()}
+
+// DONUT CHART
+function buildDonut(){const svg=document.getElementById('donutChart'),legend=document.getElementById('platformLegend');if(!svg||!legend)return;const byP={};State.incomes.forEach(inc=>{byP[inc.platform]=(byP[inc.platform]||0)+getPKR(inc.amount,inc.currency)});const total=Object.values(byP).reduce((a,b)=>a+b,0);if(total===0){svg.innerHTML=`<circle cx="110" cy="110" r="80" fill="none" stroke="var(--divider)" stroke-width="28"/><text x="110" y="108" text-anchor="middle" font-family="DM Mono,monospace" font-size="14" fill="var(--text-3)">No data</text><text x="110" y="126" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="var(--text-3)">yet</text>`;legend.innerHTML=`<div class="empty-state"><svg class="empty-icon" viewBox="0 0 80 60" fill="none"><rect x="8" y="16" width="64" height="36" rx="6" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><circle cx="40" cy="34" r="12" stroke="currentColor" stroke-width="2"/></svg><p>Log your first income entry to see platform breakdown.</p></div>`;return}const sorted=Object.entries(byP).sort((a,b)=>b[1]-a[1]),circ=2*Math.PI*80;let h=`<defs><filter id="dGlow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="110" cy="110" r="80" fill="none" stroke="var(--divider)" stroke-width="28"/>`;let off=0;sorted.forEach(([p,pkr],i)=>{const pct=pkr/total,dash=pct*circ,col=PC[p]||'#9CA3AF',rot=(off/circ)*360-90;h+=`<circle id="ds${i}" cx="110" cy="110" r="80" fill="none" stroke="${col}" stroke-width="28" stroke-linecap="butt" stroke-dasharray="0 ${circ}" transform="rotate(${rot} 110 110)" style="cursor:pointer;transition:stroke-width .2s" data-val="${fmtPKR(pkr)}" data-pct="${(pct*100).toFixed(1)}"/>`;off+=dash});const ts=Math.round(total).toLocaleString('en-PK');h+=`<text x="110" y="102" text-anchor="middle" font-family="DM Mono,monospace" font-size="12" fill="var(--text)" font-weight="500">₨${ts}</text><text x="110" y="120" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="var(--text-3)">TOTAL EARNED</text>`;svg.innerHTML=h;sorted.forEach(([p,pkr],i)=>{const pct=pkr/total,dash=pct*circ,seg=document.getElementById(`ds${i}`);if(!seg)return;setTimeout(()=>{seg.style.strokeDasharray=`${dash} ${circ-dash}`},60+i*130);seg.addEventListener('mouseenter',function(){this.setAttribute('stroke-width','34');this.setAttribute('filter','url(#dGlow)')});seg.addEventListener('mouseleave',function(){this.setAttribute('stroke-width','28');this.removeAttribute('filter')})});const best=sorted[0][0];legend.innerHTML=sorted.map(([p,pkr])=>`<div class="legend-item"><div class="legend-left"><span class="legend-dot" style="background:${PC[p]||'#9CA3AF'}"></span><div><div class="legend-name">${PF[p]?.label||p}${p===best?'<span class="best-badge">BEST</span>':''}</div><div class="legend-sub">${(pkr/total*100).toFixed(1)}% of total</div></div></div><div class="legend-right"><div class="legend-amount">${fmtPKR(pkr)}</div></div></div>`).join('')}
+
+// CALCULATOR (live)
+function runCalculator(){const amount=parseFloat(document.getElementById('calcAmount').value)||0,currency=document.getElementById('calcCurrency').value,platform=document.getElementById('calcPlatform').value,withdrawal=document.getElementById('calcWithdrawal').value,result=document.getElementById('calcResult');if(amount<=0){result.innerHTML=`<div class="calc-placeholder"><div class="calc-placeholder-icon">₨</div><div class="calc-placeholder-text">Enter an amount to see breakdown</div></div>`;return}const gU=getUSD(amount,currency),pf=pfeeAmt(gU,platform),nP=gU-pf,wf=wfeeAmt(nP,withdrawal),nU=nP-wf,gPKR=nU*State.rates.PKR,{tax,effectiveRate}=calcFBR(gPKR*12),mTax=tax/12,rPKR=gPKR-mTax,sym={USD:'$',EUR:'€',GBP:'£',PKR:'₨'}[currency]||'$',pi=PF[platform],wi=WF[withdrawal]||WF.payoneer;const steps=[{l:'Gross Amount',v:`${sym}${amount.toFixed(2)}`,c:''},{l:`${pi.label} fee (${(pi.pct*100).toFixed(0)}%)`,v:pf>0?`− $${pf.toFixed(2)}`:'— None',c:pf>0?'deduct':''},{l:'After platform fee',v:fmtUSD(nP),c:''},{l:`${wi.label} (${(wi.pct*100).toFixed(1)}%)`,v:wf>0?`− $${wf.toFixed(2)}`:'— None',c:wf>0?'deduct':''},{l:`PKR conversion (×${State.rates.PKR.toFixed(1)})`,v:fmtPKR(gPKR),c:''},{l:`FBR tax est. (${(effectiveRate*100).toFixed(2)}% eff.)`,v:mTax>0?`− ${fmtPKR(mTax)}`:'— Below threshold',c:mTax>0?'deduct':''},{l:'✦ YOUR REAL EARNINGS',v:fmtPKR(rPKR),c:'final'}];result.innerHTML=`<ul class="calc-steps">${steps.map((s,i)=>`<li class="calc-step ${s.c}" style="animation-delay:${i*80}ms"><span class="calc-step-label">${s.l}</span><span class="calc-step-val">${s.v}</span></li>`).join('')}</ul>`}
+
+// PLATFORM COMPARISON
+function buildComparison(){const grid=document.getElementById('comparisonGrid');if(!grid)return;const gross=500,results=['fiverr','upwork','freelancer','direct'].map(p=>{const pf=pfeeAmt(gross,p),nP=gross-pf,wf=wfeeAmt(nP,'payoneer'),nW=nP-wf,pkr=nW*State.rates.PKR;return{platform:p,pf,wf,netUSD:nP,pkr}});const maxP=Math.max(...results.map(r=>r.pkr)),winner=results.find(r=>r.pkr===maxP);grid.innerHTML=results.map(r=>{const pi=PF[r.platform],isW=r.platform===winner.platform,bPct=(r.pkr/maxP*100).toFixed(1),col=PC[r.platform];return`<div class="comparison-card ${isW?'winner':''}"><${isW?`div class="winner-badge">🏆 BEST TAKE-HOME</div`:`span style="display:none"`}>${isW?'':''}${isW?'':'<span style="display:none">'}${isW?'':'</span>'}<div class="comp-platform">${pi.label}</div><div class="comp-sub">On $${gross} gross</div><div class="comp-row"><span class="label">Platform fee</span><span class="val">−$${r.pf.toFixed(2)}</span></div><div class="comp-row"><span class="label">Payoneer (2%)</span><span class="val">−$${r.wf.toFixed(2)}</span></div><div class="comp-bar-wrap"><div class="comp-bar" style="width:0;background:${col}" data-target="${bPct}"></div></div><div class="comp-real">${fmtPKR(r.pkr)}</div><div class="comp-label">real take-home in PKR</div><div class="comp-row"><span class="label">USD to you</span><span class="val">$${r.netUSD.toFixed(2)}</span></div></div>`}).join('').replace(/><span style="display:none"><\/span>/g,'>');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){grid.querySelectorAll('.comp-bar').forEach(b=>{setTimeout(()=>{b.style.width=b.dataset.target+'%'},200)});if(winner)setTimeout(fireConfetti,800);obs.unobserve(e.target)}})},{threshold:.3});obs.observe(grid)}
+
+// FBR TAX
+function calcFBRTax(){const pkr=parseFloat(document.getElementById('taxAnnualIncome').value)||0,result=document.getElementById('taxResult');document.querySelectorAll('.slab-row').forEach(r=>r.classList.remove('active-slab'));if(pkr===0){result.innerHTML=`<div class="calc-placeholder"><div class="calc-placeholder-icon">📋</div><div class="calc-placeholder-text">Enter your annual income above — updates live</div></div>`;return}const{tax,slab,effectiveRate}=calcFBR(pkr);const sr=document.querySelector(`.slab-row[data-slab="${slab}"]`);if(sr)sr.classList.add('active-slab');const labels=['Slab 1 — 0% (Under ₨600K)','Slab 2 — 2.5%','Slab 3 — 12.5%','Slab 4 — 17.5%','Slab 5 — 22.5%'];const mTax=tax/12,netA=pkr-tax,pct=Math.min((pkr/3600000)*100,100),col=slab===0?'#00C853':slab<=2?'#F59E0B':'#EF4444';result.innerHTML=`<div class="tax-result-item"><span class="label">Annual Income</span><span class="val">${fmtPKR(pkr)}</span></div><div class="tax-result-item"><span class="label">Tax Bracket</span><span class="val">${labels[slab]}</span></div><div class="tax-result-item highlight"><span class="label">Annual Tax Owed</span><span class="val">${fmtPKR(tax)}</span></div><div class="tax-result-item"><span class="label">Monthly Tax (est.)</span><span class="val">${fmtPKR(mTax)}</span></div><div class="tax-result-item"><span class="label">Effective Tax Rate</span><span class="val">${(effectiveRate*100).toFixed(2)}%</span></div><div class="tax-result-item"><span class="label">Net Annual After Tax</span><span class="val">${fmtPKR(netA)}</span></div><div class="tax-progress-wrap"><div class="tax-progress-label">Position within ₨3.6M range</div><div class="tax-progress-bg"><div class="tax-progress-fill" style="width:0;background:${col}" data-target="${pct.toFixed(1)}"></div></div></div>`;setTimeout(()=>{const f=result.querySelector('.tax-progress-fill');if(f)f.style.width=f.dataset.target+'%'},50)}
+
+// GOAL TRACKER
+function setGoal(){const v=parseFloat(document.getElementById('goalInput').value)||0;State.goal=v;save();updateGoal()}
+function setGoalPreset(v){State.goal=v;const i=document.getElementById('goalInput');if(i)i.value=v;save();updateGoal();showToast(`Goal set to ${fmtPKR(v)} ✓`)}
+function updateGoal(){const ring=document.getElementById('goalRingFill'),pctEl=document.getElementById('goalPct'),msgEl=document.getElementById('goalMessage'),stsEl=document.getElementById('goalStats');if(!ring)return;const circ=2*Math.PI*70;if(State.goal===0){ring.style.strokeDashoffset=circ;pctEl.textContent='0%';msgEl.textContent='Set a goal to start tracking.';stsEl.innerHTML='';return}const now=new Date(),mk=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`,earned=State.incomes.filter(i=>i.date.startsWith(mk)).reduce((s,i)=>s+getPKR(i.amount,i.currency),0),pct=Math.min(earned/State.goal,1);ring.style.strokeDashoffset=circ*(1-pct);pctEl.textContent=Math.round(pct*100)+'%';const msgs=['Log your first income to get started!','Great start — keep the momentum going.','Almost halfway. One project away.','Solid progress. The finish line is close.','So close! One more project gets you there.','🎉 Goal smashed! Time to raise the bar.'];msgEl.textContent=msgs[Math.min(Math.floor(pct*5),msgs.length-1)];const day=now.getDate(),dT=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(),proj=day>0?(earned/day)*dT:0;stsEl.innerHTML=`<div class="goal-stat-row"><span class="label">Earned this month</span><span class="val">${fmtPKR(earned)}</span></div><div class="goal-stat-row"><span class="label">Goal</span><span class="val">${fmtPKR(State.goal)}</span></div><div class="goal-stat-row"><span class="label">Remaining</span><span class="val">${fmtPKR(Math.max(State.goal-earned,0))}</span></div><div class="goal-stat-row"><span class="label">Projected month-end</span><span class="val">${fmtPKR(proj)}</span></div>`}
+
+// DASHBOARD
+function animStat(id,target,fmt){const el=document.getElementById(id);if(!el)return;const t0=performance.now(),ease=t=>1-Math.pow(1-t,3);function step(now){const p=Math.min((now-t0)/900,1);el.textContent=fmt(Math.round(ease(p)*target));if(p<1)requestAnimationFrame(step)}requestAnimationFrame(step)}
+function updateDashboard(){const now=new Date(),mk=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`,yk=`${now.getFullYear()}`;let mo=0,yr=0;const byP={},projs=new Set();State.incomes.forEach(inc=>{const pkr=getPKR(inc.amount,inc.currency);if(inc.date.startsWith(mk))mo+=pkr;if(inc.date.startsWith(yk))yr+=pkr;byP[inc.platform]=(byP[inc.platform]||0)+pkr;if(inc.project)projs.add(inc.project)});const best=Object.entries(byP).sort((a,b)=>b[1]-a[1])[0];const{effectiveRate}=calcFBR(yr);const tgU=State.incomes.filter(i=>i.date.startsWith(mk)).reduce((s,i)=>s+getUSD(i.amount,i.currency),0);const rPct=tgU>0?((tgU*.80*.98)/tgU*100).toFixed(1):0;animStat('statMonthly',mo,fmtPKR);animStat('statYearly',yr,fmtPKR);animStat('statProjects',projs.size,n=>n.toLocaleString());setText('statBestPlatform',best?(PF[best[0]]?.label||best[0]):'—');setText('statBestPlatformSub',best?fmtPKR(best[1])+' earned':'No data yet');setText('statTaxRate',(effectiveRate*100).toFixed(2)+'%');setText('statRealPct',rPct+'%');setText('statMonthlyDelta',mo>0?'Based on logged entries':'—');setText('statYearlyDelta',yr>0?'Based on logged entries':'—');setText('statProjectsSub',projs.size>0?[...projs].slice(0,2).join(', ')+(projs.size>2?` +${projs.size-2} more`:''):'—');buildIncomeChart();buildDonut();renderHistory();updateGoal()}
+
+// INCOME PREVIEW
+function calcPreview(a,c,p){if(!a||a<=0)return null;const gU=getUSD(a,c),pf=pfeeAmt(gU,p),nU=gU-pf,wf=wfeeAmt(nU,'payoneer'),pkr=(nU-wf)*State.rates.PKR;return{gU,pf,wf,pkr}}
+function renderPreview(elId,a,c,p){const el=document.getElementById(elId);if(!el)return;const pv=calcPreview(parseFloat(a),c,p);const sym={USD:'$',EUR:'€',GBP:'£',PKR:'₨'}[c]||'$';if(!pv){el.innerHTML='<div class="preview-placeholder">Enter amount to preview</div>';return}el.innerHTML=`<div class="preview-row"><span>Gross (${c})</span><span class="val">${sym}${parseFloat(a).toFixed(2)}</span></div><div class="preview-row"><span>${PF[p]?.label} fee</span><span class="deduct-val">−$${pv.pf.toFixed(2)}</span></div><div class="preview-row"><span>Payoneer (2%)</span><span class="deduct-val">−$${pv.wf.toFixed(2)}</span></div><div class="preview-row final"><span>Real Earnings</span><span>${fmtPKR(pv.pkr)}</span></div>`}
+function updateIncomePreview(){renderPreview('incomePreview',document.getElementById('incomeAmount').value,document.getElementById('incomeCurrency').value,document.getElementById('incomePlatform').value)}
+function updateModalPreview(){renderPreview('modalPreview',document.getElementById('modalAmount').value,document.getElementById('modalCurrency').value,document.getElementById('modalPlatform').value)}
+
+// ADD INCOME
+function addEntry(a,c,p,proj,date){if(!a||parseFloat(a)<=0){showToast('Enter a valid amount.','error');return false}if(!date){showToast('Please select a date.','error');return false}State.incomes.unshift({id:Date.now(),amount:parseFloat(a),currency:c,platform:p,project:proj||'Untitled Project',date,pkr:getPKR(parseFloat(a),c)});save();updateDashboard();showToast('Income entry saved ✓','success');return true}
+function addIncome(){const ok=addEntry(document.getElementById('incomeAmount').value,document.getElementById('incomeCurrency').value,document.getElementById('incomePlatform').value,document.getElementById('incomeProject').value,document.getElementById('incomeDate').value);if(ok){document.getElementById('incomeAmount').value='';document.getElementById('incomeProject').value='';document.getElementById('incomePreview').innerHTML='<div class="preview-placeholder">Fill in the details to see your real earnings preview</div>'}}
+function addIncomeFromModal(){const ok=addEntry(document.getElementById('modalAmount').value,document.getElementById('modalCurrency').value,document.getElementById('modalPlatform').value,document.getElementById('modalProject').value,document.getElementById('modalDate').value);if(ok)closeModalDirect()}
+
+// MODAL
+function openModal(){const o=document.getElementById('modalOverlay');o.classList.add('open');document.getElementById('modalDate').value=todayStr();document.getElementById('modalAmount').value='';document.getElementById('modalProject').value='';document.getElementById('modalPreview').innerHTML='<div class="preview-placeholder">Fill in amount to see preview</div>';setTimeout(()=>document.getElementById('modalAmount').focus(),300)}
+function closeModal(e){if(e.target===e.currentTarget)closeModalDirect()}
+function closeModalDirect(){document.getElementById('modalOverlay').classList.remove('open')}
+
+// HISTORY TABLE
+function renderHistory(){const body=document.getElementById('historyBody');if(!body)return;let rows=[...State.incomes];if(State.searchQuery){const q=State.searchQuery.toLowerCase();rows=rows.filter(r=>r.project.toLowerCase().includes(q)||r.platform.toLowerCase().includes(q)||r.currency.toLowerCase().includes(q))}if(State.platformFilter)rows=rows.filter(r=>r.platform===State.platformFilter);rows.sort((a,b)=>{let av,bv;if(State.sortKey==='date'){av=a.date;bv=b.date}else if(State.sortKey==='gross'){av=a.amount;bv=b.amount}else{av=a.project;bv=b.project}return av<bv?State.sortDir:av>bv?-State.sortDir:0});if(rows.length===0){body.innerHTML=`<tr><td colspan="7" class="table-empty"><div class="empty-state"><svg class="empty-icon" viewBox="0 0 80 60" fill="none"><rect x="8" y="8" width="64" height="44" rx="6" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/><line x1="20" y1="22" x2="60" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><p>No entries match your filter.</p></div></td></tr>`;return}const sym={USD:'$',EUR:'€',GBP:'£',PKR:'₨'};body.innerHTML=rows.map(inc=>{const pf=pfeeAmt(getUSD(inc.amount,inc.currency),inc.platform),nU=getUSD(inc.amount,inc.currency)-pf,wf=wfeeAmt(nU,'payoneer'),real=(nU-wf)*State.rates.PKR,pkr=getPKR(inc.amount,inc.currency),s=sym[inc.currency]||inc.currency;return`<tr><td>${inc.date}</td><td>${inc.project}</td><td><span class="platform-tag ${inc.platform}">${PF[inc.platform]?.label||inc.platform}</span></td><td class="mono-val">${s}${inc.amount.toFixed(2)}</td><td class="mono-val">${fmtPKR(pkr)}</td><td class="mono-val green-val">${fmtPKR(real)}</td><td><button class="delete-btn" onclick="deleteIncome(${inc.id})" title="Delete">✕</button></td></tr>`}).join('');['date','project','gross'].forEach(k=>{const el=document.getElementById('sort-'+k);if(el)el.textContent=State.sortKey===k?(State.sortDir===-1?'↓':'↑'):'↕'})}
+function deleteIncome(id){State.incomes=State.incomes.filter(i=>i.id!==id);save();updateDashboard();showToast('Entry removed.')}
+function sortHistory(k){State.sortDir=State.sortKey===k?State.sortDir*-1:-1;State.sortKey=k;renderHistory()}
+function filterHistory(){State.searchQuery=document.getElementById('historySearch').value;State.platformFilter=document.getElementById('historyPlatformFilter').value;renderHistory()}
+function exportCSV(){if(State.incomes.length===0){showToast('No data to export.','error');return}const rows=[['Date','Project','Platform','Amount','Currency','PKR Value','Real Earnings PKR']];State.incomes.forEach(inc=>{const pf=pfeeAmt(getUSD(inc.amount,inc.currency),inc.platform),nU=getUSD(inc.amount,inc.currency)-pf,wf=wfeeAmt(nU,'payoneer'),real=Math.round((nU-wf)*State.rates.PKR);rows.push([inc.date,`"${inc.project}"`,inc.platform,inc.amount,inc.currency,Math.round(getPKR(inc.amount,inc.currency)),real])});const csv=rows.map(r=>r.join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`freelanceflow-income-${todayStr()}.csv`;a.click();showToast('CSV exported ✓')}
+
+// COMPARISON GRID (cleaner version)
+function buildComparison(){const grid=document.getElementById('comparisonGrid');if(!grid)return;const gross=500,results=['fiverr','upwork','freelancer','direct'].map(p=>{const pf=pfeeAmt(gross,p),nP=gross-pf,wf=wfeeAmt(nP,'payoneer'),nW=nP-wf,pkr=nW*State.rates.PKR;return{platform:p,pf,wf,netUSD:nP,pkr}});const maxP=Math.max(...results.map(r=>r.pkr)),winner=results.find(r=>r.pkr===maxP);grid.innerHTML=results.map(r=>{const pi=PF[r.platform],isW=r.platform===winner.platform,bPct=(r.pkr/maxP*100).toFixed(1),col=PC[r.platform];return`<div class="comparison-card ${isW?'winner':''}">${isW?'<div class="winner-badge">🏆 BEST TAKE-HOME</div>':''}<div class="comp-platform">${pi.label}</div><div class="comp-sub">On $${gross} gross</div><div class="comp-row"><span class="label">Platform fee</span><span class="val">−$${r.pf.toFixed(2)}</span></div><div class="comp-row"><span class="label">Payoneer (2%)</span><span class="val">−$${r.wf.toFixed(2)}</span></div><div class="comp-bar-wrap"><div class="comp-bar" style="width:0;background:${col}" data-target="${bPct}"></div></div><div class="comp-real">${fmtPKR(r.pkr)}</div><div class="comp-label">real take-home in PKR</div><div class="comp-row"><span class="label">USD to you</span><span class="val">$${r.netUSD.toFixed(2)}</span></div></div>`}).join('');const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){grid.querySelectorAll('.comp-bar').forEach(b=>{setTimeout(()=>{b.style.width=b.dataset.target+'%'},200)});setTimeout(fireConfetti,600);obs.unobserve(e.target)}})},{threshold:.3});obs.observe(grid)}
+
+// KEYBOARD
+function initKeyboard(){document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect();if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openModal()}})}
+
+// BOOT
+document.addEventListener('DOMContentLoaded',()=>{
+  load();
+  applyTheme(State.theme);
+  initTheme();
+  initMobileNav();
+  initKeyboard();
+  initRipples();
+  document.getElementById('incomeDate').value=todayStr();
+  document.getElementById('addIncomeNavBtn').addEventListener('click',openModal);
+  if(State.goal){const gi=document.getElementById('goalInput');if(gi)gi.value=State.goal}
+  initParticles();
+  initHero3D();
+  initReveal();
+  initScrollSpy();
+  initHeroCounters();
+  setTimeout(initTilt,400);
+  updateDashboard();
+  runCalculator();
+  setLoader(10,'Starting up…');
+  fetchRates();
+});
+</script>
+</body>
+</html>
